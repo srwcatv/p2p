@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.catv.p2p.business.mapper.RechargeOfflineMapper">
+
+    <resultMap id="BaseResultMap" type="RechargeOffline">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="state" property="state" jdbcType="TINYINT"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="auditTime" property="auditTime" jdbcType="TIMESTAMP"/>
+        <result column="applyTime" property="applyTime" jdbcType="TIMESTAMP"/>
+        <!--<result column="auditor_id" property="auditor" jdbcType="BIGINT" />-->
+        <!--<result column="applier_id" property="applier" jdbcType="BIGINT" />-->
+        <result column="tradeCode" property="tradeCode" jdbcType="VARCHAR"/>
+        <result column="tradeTime" property="tradeTime" jdbcType="TIMESTAMP"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="note" property="note" jdbcType="VARCHAR"/>
+        <!--<result column="bankInfo_id" property="bankInfo.id" jdbcType="BIGINT" />-->
+        <association property="bankInfo" javaType="PlatformBankInfo" columnPrefix="p_">
+            <id property="id" column="id"/>
+            <result property="bankName" column="bankName"/>
+            <result property="accountNumber" column="accountNumber"/>
+            <result property="bankForkName" column="bankForkName"/>
+        </association>
+        <association property="applier" javaType="LoginInfo" columnPrefix="ap_">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+        </association>
+        <association property="auditor" javaType="LoginInfo" columnPrefix="au_">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+        </association>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    insert into `rechargeoffline` (state, remark, auditTime, 
+      applyTime, auditor_id, applier_id, 
+      tradeCode, tradeTime, amount, 
+      note, bankInfo_id)
+    values (#{state,jdbcType=TINYINT}, #{remark,jdbcType=VARCHAR}, #{auditTime,jdbcType=TIMESTAMP}, 
+      #{applyTime,jdbcType=TIMESTAMP}, #{auditor.id,jdbcType=BIGINT}, #{applier.id,jdbcType=BIGINT}, 
+      #{tradeCode,jdbcType=VARCHAR}, #{tradeTime,jdbcType=TIMESTAMP}, #{amount,jdbcType=DECIMAL}, 
+      #{note,jdbcType=VARCHAR}, #{bankInfo.id,jdbcType=BIGINT})
+  </insert>
+
+    <update id="updateByPrimaryKey">
+    update `rechargeoffline`
+    set state = #{state,jdbcType=TINYINT},
+      remark = #{remark,jdbcType=VARCHAR},
+      auditTime = #{auditTime,jdbcType=TIMESTAMP},
+      auditor_id = #{auditor.id,jdbcType=BIGINT},
+      tradeCode = #{tradeCode,jdbcType=VARCHAR},
+      tradeTime = #{tradeTime,jdbcType=TIMESTAMP},
+      amount = #{amount,jdbcType=DECIMAL},
+      note = #{note,jdbcType=VARCHAR},
+      bankInfo_id = #{bankInfo.id,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select <include refid="base_column"/>
+    from <include refid="base_form"/>
+    where r.id = #{id,jdbcType=BIGINT}
+  </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+    select <include refid="base_column"/>
+    from <include refid="base_form"/>
+  </select>
+
+    <sql id="base_where">
+        <where>
+            <if test="beginTime!=null">
+                AND r.applyTime &gt;= #{beginTime}
+            </if>
+            <if test="endTime!=null">
+                AND r.applyTime &lt;=#{endTime}
+            </if>
+            <if test="state>-1">
+                AND r.state = #{state}
+            </if>
+            <if test="tradeCode!=null">
+                AND r.tradeCode = #{tradeCode}
+            </if>
+            <if test="bankInfoId >-1">
+                AND r.bankInfo_id = #{bankInfoId}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="base_column">
+        r.id,r.tradeCode,r.tradeTime,r.amount,r.state,p.id as p_id,p.bankName as p_bankName,p.accountNumber as p_accountNumber,p.bankForkName as p_bankForkName,ap.id as ap_id,ap.username as ap_username,au.id as au_id,au.username as au_username
+    </sql>
+
+    <sql id="base_form">
+        rechargeoffline as r LEFT JOIN platformbankinfo as p ON r.bankInfo_id = p.id LEFT JOIN logininfo as ap ON r.applier_id = ap.id LEFT JOIN logininfo as au ON r.applier_id = au.id
+    </sql>
+
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT <include refid="base_column"/>
+        FROM rechargeoffline as r LEFT JOIN platformbankinfo as p ON r.bankInfo_id = p.id LEFT JOIN logininfo as ap ON r.applier_id = ap.id LEFT JOIN logininfo as au ON r.applier_id = au.id
+        <include refid="base_where"/>
+        limit #{start},#{pageSize}
+    </select>
+
+    <select id="queryCount" resultType="integer">
+        SELECT count(r.id)
+        FROM rechargeoffline r
+        <include refid="base_where"/>
+    </select>
+</mapper>

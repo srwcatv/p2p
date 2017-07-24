@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.catv.p2p.base.mapper.EmailVerifyMapper" >
+  <resultMap id="BaseResultMap" type="com.catv.p2p.base.domain.EmailVerify" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="userInfo_id" property="userInfo_id" jdbcType="BIGINT" />
+    <result column="sendTime" property="sendTime" jdbcType="TIMESTAMP" />
+    <result column="uuid" property="uuid" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `emailverify`
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.catv.p2p.base.domain.EmailVerify" useGeneratedKeys="true" keyProperty="id" >
+    insert into `emailverify` (userInfo_id, sendTime, uuid,email
+      )
+    values (#{userInfo_id,jdbcType=BIGINT}, #{sendTime,jdbcType=TIMESTAMP}, #{uuid,jdbcType=VARCHAR},#{email}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.catv.p2p.base.domain.EmailVerify" >
+    update `emailverify`
+    set userInfo_id = #{userInfo_id,jdbcType=BIGINT},
+      sendTime = #{sendTime,jdbcType=TIMESTAMP},
+      uuid = #{uuid,jdbcType=VARCHAR}
+      email = #{email}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <sql id="base_column">
+        id, userInfo_id, sendTime, uuid,email
+    </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select <include refid="base_column"/>
+    from `emailverify`
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select <include refid="base_column"/>
+    from `emailverify`
+  </select>
+
+    <select id="selectByUuid" resultMap="BaseResultMap" parameterType="string">
+        select <include refid="base_column"/>
+        FROM `emailverify`
+        WHERE uuid = #{uuid}
+    </select>
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.catv.p2p.base.mapper.IpLogMapper">
+    <resultMap id="BaseResultMap" type="com.catv.p2p.base.domain.IpLog">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="ip" property="ip" jdbcType="VARCHAR"/>
+        <result column="loginState" property="loginState" jdbcType="TINYINT"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="loginType" property="loginType" jdbcType="TINYINT"/>
+        <result column="loginTime" property="loginTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `iplog`
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    insert into `iplog` (ip, loginState, username, 
+      loginType, loginTime)
+    values (#{ip,jdbcType=VARCHAR}, #{loginState,jdbcType=TINYINT}, #{username,jdbcType=VARCHAR}, 
+      #{loginType,jdbcType=TINYINT}, #{loginTime,jdbcType=TIMESTAMP})
+  </insert>
+    <update id="updateByPrimaryKey">
+    update `iplog`
+    set ip = #{ip,jdbcType=VARCHAR},
+      loginState = #{loginState,jdbcType=TINYINT},
+      username = #{username,jdbcType=VARCHAR},
+      loginType = #{loginType,jdbcType=TINYINT},
+      loginTime = #{loginTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <sql id="base_column">
+      id, ip, loginState, username, loginType, loginTime
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select <include refid="base_column"/>
+    from `iplog`
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select <include refid="base_column"/>
+    from `iplog`
+  </select>
+
+    <sql id="base_where">
+        <where>
+            <if test="beginDate != null">
+                and loginTime &gt;= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                and loginTime &lt;= #{endDate}
+            </if>
+            <if test="username!=null">
+                AND username LIKE concat('%',#{username},'%')
+            </if>
+            <if test="state > -1">
+                and loginState = #{state}
+            </if>
+            <if test="loginType > -1">
+                and loginType = #{loginType}
+            </if>
+        </where>
+    </sql>
+    
+    <select id="selectPageResultByQo" resultMap="BaseResultMap">
+        select <include refid="base_column"/>
+        from `iplog`
+        <include refid="base_where"/>
+        ORDER BY loginTime DESC
+        LIMIT #{start},#{pageSize}
+    </select>
+
+    <select id="selectCount" resultType="int">
+        select count(id)
+        from `iplog`
+        <include refid="base_where"/>
+    </select>
+</mapper>
